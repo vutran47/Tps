@@ -15,10 +15,12 @@ var EmailList = React.createClass({
   },
 
   loadmail: function() {
-    if (!ACTIVE_ACCOUNT) {
+    // If no account found in database or no change in account being used...
+    if (!ACTIVE_ACCOUNT || ACTIVE_ACCOUNT.user_account_name == this.state.account) {
       return;
     }
 
+    // detecting change when activate other account in use
     if (ACTIVE_ACCOUNT.user_account_name != this.state.account) {
       this.setState({data: [], account: ACTIVE_ACCOUNT.user_account_name});
     }
@@ -59,7 +61,7 @@ var EmailList = React.createClass({
           break;
         }
       }
-      return (<div><EmailHead emailtitle = {t} id={i}/></div>)
+      return (<div><EmailHead emailtitle = {t} key={i}/></div>)
     });
 
     return (<div className = "emaillist" >{emailhead}</div>);
