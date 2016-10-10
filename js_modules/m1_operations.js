@@ -44,7 +44,7 @@ exports.Fetching_new_message = function (account, query, me) {
   var data_update = [];
   load_gmail_stuff(account, (userId, access_token) => {
     gmail_messages_list(userId, access_token, 100, query, (response) =>{
-      for (var i = 0; i < response.messages.length; i++) {
+      for (var i in response.messages) {
           gmail_messages_get(userId, access_token, response.messages[i].id, (single_message) => {
             if ((data.length > 0 && single_message.id != data[0]['id']) || me.state.data.length == 0) {
               data_update.unshift(single_message);

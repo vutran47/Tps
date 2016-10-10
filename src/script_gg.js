@@ -57,10 +57,10 @@ function loadExistingAccounts() {
     // Open database and perform operations
     searchDatabaseWithQuery(accounts => {
       if (accounts.length == 0) return;
-      for (var i = 0; i < accounts.length; i++) {
-        var account = accounts[i];
-        var sp = account.user_account_type;
-        var user_account_name = account.user_account_name;
+      for (var i in accounts.length) {
+        let account = accounts[i];
+        let sp = account.user_account_type;
+        let user_account_name = account.user_account_name;
         append_new_account(sp, user_account_name, (i == 0) ? true : false);
       }
     });

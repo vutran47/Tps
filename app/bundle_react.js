@@ -22,10 +22,12 @@ var EmailList = React.createClass({
   loadmail: function loadmail() {
     var _this = this;
 
-    if (!ACTIVE_ACCOUNT) {
+    // If no account found in database or no change in account being used...
+    if (!ACTIVE_ACCOUNT || ACTIVE_ACCOUNT.user_account_name == this.state.account) {
       return;
     }
 
+    // detecting change when activate other account in use
     if (ACTIVE_ACCOUNT.user_account_name != this.state.account) {
       this.setState({ data: [], account: ACTIVE_ACCOUNT.user_account_name });
     }
@@ -69,7 +71,7 @@ var EmailList = React.createClass({
       return React.createElement(
         'div',
         null,
-        React.createElement(EmailHead, { emailtitle: t, id: i })
+        React.createElement(EmailHead, { emailtitle: t, key: i })
       );
     });
 
@@ -146,7 +148,7 @@ exports.Fetching_new_message = function (account, query, me) {
   var data_update = [];
   load_gmail_stuff(account, function (userId, access_token) {
     gmail_messages_list(userId, access_token, 100, query, function (response) {
-      for (var i = 0; i < response.messages.length; i++) {
+      for (var i in response.messages) {
         gmail_messages_get(userId, access_token, response.messages[i].id, function (single_message) {
           if (data.length > 0 && single_message.id != data[0]['id'] || me.state.data.length == 0) {
             data_update.unshift(single_message);

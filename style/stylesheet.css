@@ -74,7 +74,7 @@ body {
 #conversationdiv {
   position: relative;
   min-height: 330px;
-  /*background-color: #FF6F50;*/
+  overflow: auto;
   margin: 10px;
 }
 
