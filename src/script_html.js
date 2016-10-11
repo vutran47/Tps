@@ -3,9 +3,7 @@ function append_new_account(sp, user_account_name, trigger) {
   let append = '<div id="accselect'+i+'" class="accselect" data-spname="' + sp + '" data-accountname="'+user_account_name+'" onclick="changeacc(this)"><span class="nav-group-item" ><span class="icon icon-mail"></span>'+user_account_name+'</span></div>';
   $('nav#left-nav').append(append);
 
-  if (trigger) {
-    $('div#accselect'+i).trigger("click");
-  }
+  trigger && $('div#accselect'+i).trigger("click");
 }
 
 function changeacc(object){

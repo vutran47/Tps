@@ -58,7 +58,6 @@ function insertNewDocIntoDatabase(sp, user_account_name, key_access) {
 function getObjectFromDatabase(sp, user_account_name, callback) {
     var db = new Engine.Db('./base', {});
     var collection = db.collection("base");
-    console.log(sp + ' plus ' + user_account_name);
     var doc = collection.findOne({
         user_account_type: sp,
         user_account_name: user_account_name

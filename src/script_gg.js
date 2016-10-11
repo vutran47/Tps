@@ -17,18 +17,13 @@ var ACCOUNTARRAY = [];
 var CLIENTID;
 var CLIENTSECRET;
 fs.readFile('./base/temp/client_secret.json', function processClientSecrets(err, content) {
-    if (err) {
-        console.log('Error loading client secret file: ' + err);
-        return;
-    }
+    if (err) return console.log('Error loading client secret file: ' + err);
     var credentials = JSON.parse(content);
     CLIENTSECRET = credentials.installed.client_secret;
     CLIENTID = credentials.installed.client_id;
-    // redirectUrl chua biet de lam gi
-    var redirectUrl = credentials.installed.redirect_uris[0];
 });
 
-var GLOBAL_RESPONSE = [];
+// var GLOBAL_RESPONSE = [];
 
 // reusable components
 function login_window(url) {
@@ -57,21 +52,20 @@ function loadExistingAccounts() {
     // Open database and perform operations
     searchDatabaseWithQuery(accounts => {
       if (accounts.length == 0) return;
-      for (var i in accounts.length) {
-        let account = accounts[i];
+      for (let account of accounts) {
         let sp = account.user_account_type;
         let user_account_name = account.user_account_name;
-        append_new_account(sp, user_account_name, (i == 0) ? true : false);
+        append_new_account(sp, user_account_name, (accounts.indexOf(account) == 0) ? true : false);
       }
     });
 }
 
-function loadMailBox(object) {
-    // neu la gmail thi:
-    if (object.user_account_type == 'gmail') {
-        load_gmail_account(object);
-    }
-}
+// function loadMailBox(object) {
+//     // neu la gmail thi:
+//     if (object.user_account_type == 'gmail') {
+//         load_gmail_account(object);
+//     }
+// }
 
 function addNewAccount(sp_name) {
     // Them tai khoan email, sp_name la ten nha cung cap dich vu
@@ -100,10 +94,7 @@ function addNewAccount(sp_name) {
 function addNew_Gmail_Account() {
     // Khoi tao tu client_secret.json
     fs.readFile('./base/temp/client_secret.json', function processClientSecrets(err, content) {
-        if (err) {
-            console.log('Error loading client secret file: ' + err);
-            return;
-        }
+        if (err) return console.log('Error loading client secret file: ' + err);
         authorize_gmail(JSON.parse(content));
     });
 }
@@ -127,10 +118,7 @@ function authorize_gmail(credentials, callback) { // No callback for now.
             var authCode = title.substring(13);
             win.close();
             oauth2Client.getToken(authCode, function(err, token) {
-                if (err) {
-                    alert('Unable to verify your account. Please check your login information again!');
-                    return;
-                }
+                if (err) return alert('Unable to verify your account. Please check your login information again!');
                 oauth2Client.credentials = token;
                 var access_token = token['access_token'];
 
@@ -139,12 +127,8 @@ function authorize_gmail(credentials, callback) { // No callback for now.
                     access_token: access_token,
                     userId: 'me'
                 }, function(err, response) {
-                    if (!err) {
-                        // Put it into the database
-                        insertNewDocIntoDatabase('gmail', response.emailAddress, token);
-                    }
+                    (!err) && insertNewDocIntoDatabase('gmail', response.emailAddress, token);
                 });
-
             });
         } else if (title.startsWith('Denied')) {
             win.close();
@@ -169,10 +153,7 @@ function get_new_access_token(refresh_token, userId, callback) {
     xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
     xhr.onloadend = function() {
         // Return new access token
-        if (this.status == 200) {
-            var access_token = JSON.parse(this.responseText).access_token;
-            callback(userId, access_token);
-        }
+        (this.status == 200) && callback(userId, JSON.parse(this.responseText).access_token);
     };
     var param = 'client_id=' + CLIENTID + "&client_secret=" + CLIENTSECRET + "&refresh_token=" + refresh_token + "&grant_type=refresh_token";
     xhr.send(param);
@@ -183,11 +164,8 @@ function gmail_labels_list(userId, access_token) {
     gmail.users.labels.list({
         access_token: access_token,
         userId: userId
-    }, function(err, response) {
-        if (err) {
-            console.log('The API returned an error: ' + err);
-            return;
-        }
+    }, (err, response) => {
+        if (err) return console.log('The API returned an error: ' + err);
         var labels = response.labels;
         if (labels.length == 0) {
             console.log('No labels found.');
@@ -207,10 +185,8 @@ function gmail_messages_list(userId, access_token, maxResults, query, callback) 
         userId: userId,
         q: query,
         maxResults: maxResults,
-    }, function(err, response) {
-        if (!err) {
-          return callback(response);
-        }
+    }, (err, response) => {
+        if (!err) return callback(response);
     })
 }
 
@@ -219,11 +195,7 @@ function gmail_messages_get(userId, access_token, messageId, callback){
     userId: userId,
     access_token: access_token,
     id: messageId
-  }, function(err,response){
-    if(!err) {
-      return callback(response);
-    } else {
-      console.log('CANNOT GET MESSAGES');
-    }
+  }, (err,response) => {
+    if (!err) return callback(response);
   })
 }
