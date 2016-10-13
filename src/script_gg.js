@@ -60,13 +60,6 @@ function loadExistingAccounts() {
     });
 }
 
-// function loadMailBox(object) {
-//     // neu la gmail thi:
-//     if (object.user_account_type == 'gmail') {
-//         load_gmail_account(object);
-//     }
-// }
-
 function addNewAccount(sp_name) {
     // Them tai khoan email, sp_name la ten nha cung cap dich vu
     // Hien tai sp_name duy nhat xet den la gmail
@@ -110,7 +103,6 @@ function authorize_gmail(credentials, callback) { // No callback for now.
         scope: SCOPES
     });
 
-    // No need to store the tempy_json
     var win = new login_window(authUrl);
     win.on('page-title-updated', function() {
         var title = win.getTitle();
@@ -138,13 +130,13 @@ function authorize_gmail(credentials, callback) { // No callback for now.
 }
 
 function load_gmail_stuff(account, callback) {
-    var credential = account.key_access;
-    if (credential.expiry_date < new Date().getTime()) {
-        console.log('Token expired. Now get new access token');
-        get_new_access_token(credential.refresh_token, account.user_account_name, callback);
-    } else {
-        callback(account.user_account_name, credential.access_token);
-    }
+  var credential = account.key_access;
+  if (credential.expiry_date < new Date().getTime()) {
+      console.log('Token expired. Now get new access token');
+      get_new_access_token(credential.refresh_token, account.user_account_name, callback);
+  } else {
+    callback(account.user_account_name, credential.access_token);
+  }
 }
 
 function get_new_access_token(refresh_token, userId, callback) {

@@ -5,6 +5,10 @@ var Engine = require('tingodb')(),
 var fs = require('fs')
 
 var M1 = require('./js_modules/m1_operations.js');
+var events = require('events');
+var eventEmitter = new events.EventEmitter();
+
+var ACTIVE_ACCOUNT;
 
 
 // See if we have a db already
@@ -34,14 +38,14 @@ function insertNewDocIntoDatabase(sp, user_account_name, key_access) {
             fs.mkdir(path, (err) => {
                 if (!err) {
                   var account = {'user_account_type': sp, 'user_account_name': user_account_name, 'key_access': key_access};
-                  M1.Message_write(account, path);
+                  append_new_account(sp, user_account_name, true);
+                  M1.Fetching_new_message(account, '');
                 }
             });
         }
     });
 
     // create a new nav in the left bar
-    append_new_account(sp, user_account_name, true);
 
     // create index to avoid duplicate
     var option = {
@@ -62,11 +66,8 @@ function getObjectFromDatabase(sp, user_account_name, callback) {
         user_account_type: sp,
         user_account_name: user_account_name
     }, function(err, doc) {
-        if (!err) {
-            return callback(doc);
-        } else {
-            console.log('NOT FOUND IN DATABASE');
-        }
+        if (!err) return callback(doc);
+        console.log('NOT FOUND IN DATABASE');
     });
     db.close();
 }
@@ -76,9 +77,7 @@ function searchDatabaseWithQuery(callback) {
     var db = new Engine.Db('./base', {});
     var collection = db.collection("base");
     collection.find().toArray(function(err, docs) {
-        if (!err) {
-            return callback(docs);
-        }
+        if (!err) return callback(docs);
     });
     db.close();
 }
