@@ -9,7 +9,6 @@ function changeacc(object){
   eventEmitter.emit('Acc_Change', $(object).attr("data-spname"),  $(object).attr("data-accountname"));
 }
 
-
 eventEmitter.on('Acc_Change', (sp, name) => {
   getObjectFromDatabase(sp, name, (doc)=>{
     ACTIVE_ACCOUNT = doc;

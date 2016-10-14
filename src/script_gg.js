@@ -1,6 +1,3 @@
-// Script to run, yet to follow a specific UML, which we are still building
-// The script is meant to test in the early development stage
-
 'use strict';
 // I ------------------ General declarations
 // Prepare global vars
@@ -23,7 +20,6 @@ fs.readFile('./base/temp/client_secret.json', function processClientSecrets(err,
     CLIENTID = credentials.installed.client_id;
 });
 
-// var GLOBAL_RESPONSE = [];
 
 // reusable components
 function login_window(url) {
@@ -49,20 +45,19 @@ function login_window(url) {
 
 // General functions
 function loadExistingAccounts() {
-    // Open database and perform operations
+    // Open all documents in Database
     searchDatabaseWithQuery(accounts => {
       if (accounts.length == 0) return;
       for (let account of accounts) {
         let sp = account.user_account_type;
         let user_account_name = account.user_account_name;
+        // Append an account div on the left bar, trigger the first found
         append_new_account(sp, user_account_name, (accounts.indexOf(account) == 0) ? true : false);
       }
     });
 }
 
 function addNewAccount(sp_name) {
-    // Them tai khoan email, sp_name la ten nha cung cap dich vu
-    // Hien tai sp_name duy nhat xet den la gmail
     switch (sp_name) {
         case 'gmail':
             addNew_Gmail_Account();
@@ -85,7 +80,7 @@ function addNewAccount(sp_name) {
 // A. Gmail api -specfic functions
 // A. 1. Authorization and access token
 function addNew_Gmail_Account() {
-    // Khoi tao tu client_secret.json
+    // Grab the client_secret.json
     fs.readFile('./base/temp/client_secret.json', function processClientSecrets(err, content) {
         if (err) return console.log('Error loading client secret file: ' + err);
         authorize_gmail(JSON.parse(content));
@@ -93,6 +88,7 @@ function addNew_Gmail_Account() {
 }
 
 function authorize_gmail(credentials, callback) { // No callback for now.
+  // Authorization process
     var clientSecret = credentials.installed.client_secret;
     var clientId = credentials.installed.client_id;
     var redirectUrl = credentials.installed.redirect_uris[0];
@@ -119,6 +115,7 @@ function authorize_gmail(credentials, callback) { // No callback for now.
                     access_token: access_token,
                     userId: 'me'
                 }, function(err, response) {
+                    // If no error, write a new document into database
                     (!err) && insertNewDocIntoDatabase('gmail', response.emailAddress, token);
                 });
             });
@@ -130,6 +127,7 @@ function authorize_gmail(credentials, callback) { // No callback for now.
 }
 
 function load_gmail_stuff(account, callback) {
+  // A general function to perform check on expiry status of access token
   var credential = account.key_access;
   if (credential.expiry_date < new Date().getTime()) {
       console.log('Token expired. Now get new access token');
@@ -140,6 +138,7 @@ function load_gmail_stuff(account, callback) {
 }
 
 function get_new_access_token(refresh_token, userId, callback) {
+  // Exchange token for a new one
     var xhr = new XMLHttpRequest();
     xhr.open('POST', 'https://www.googleapis.com/oauth2/v4/token', true);
     xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');

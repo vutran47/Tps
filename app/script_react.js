@@ -7,7 +7,7 @@ var M1 = require('../js_modules/m1_operations.js');
 
 var EmailList = React.createClass({
   loadmail: function() {
-    // Get from dir
+    // Get message from local storage
     M1.Get_path_and_dir(ACTIVE_ACCOUNT, (result) => {
       this.setState({data: result, account: ACTIVE_ACCOUNT.user_account_name});
     })
@@ -19,6 +19,7 @@ var EmailList = React.createClass({
 
   fetch: function() {
     if (ACTIVE_ACCOUNT) {
+      // write a query to filter messages to get
       var query = this.state.data.length > 0 ? ('after:'+ this.state.data[0]['internalDate'].substring(0,10)) : '';
       console.log('Interval fetching with query: ' + query);
       M1.Fetching_new_message(ACTIVE_ACCOUNT, query)
@@ -26,8 +27,11 @@ var EmailList = React.createClass({
   },
 
   componentDidMount: function() {
+    // Register this React component for related events
     eventEmitter.on('React_listen_to_Acc_change', this.loadmail);
     eventEmitter.on('Incoming_Message', this.loadmail);
+
+    // Perform interval check on new message
     setInterval(this.fetch, this.props.pollInterval);
   },
 
@@ -48,12 +52,10 @@ var EmailList = React.createClass({
   }
 });
 
-
 ReactDOM.render(
   <EmailList pollInterval = {1000} />,
   document.getElementById('conversationdiv')
 );
-
 
 var EmailHead = React.createClass({
     render: function() {

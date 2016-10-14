@@ -4,28 +4,30 @@ var Engine = require('tingodb')(),
     assert = require('assert');
 var fs = require('fs')
 
+// A supporting module
 var M1 = require('./js_modules/m1_operations.js');
+
+// Main event manipulator
 var events = require('events');
 var eventEmitter = new events.EventEmitter();
 
+// A global var to store information on active account
 var ACTIVE_ACCOUNT;
 
 
-// See if we have a db already
-// Node.js asynchronos function 'fs.access' to confirm accessiblity/availability of a file
+// Check if we have a database already
 fs.access('./base/base', fs.constants.W_OK | fs.constants.R_OK, function(err) {
     if (!err) {
-        loadExistingAccounts();
+      loadExistingAccounts();
     } else {
-        console.log('NO DATABASE');
+      console.log('NO DATABASE');
     }
 });
 
-
 function insertNewDocIntoDatabase(sp, user_account_name, key_access) {
+  // Write a new account information to database
     var db = new Engine.Db('./base', {});
     var collection = db.collection("base");
-
     collection.insert({
         user_account_type: sp,
         user_account_name: user_account_name,
@@ -45,8 +47,6 @@ function insertNewDocIntoDatabase(sp, user_account_name, key_access) {
         }
     });
 
-    // create a new nav in the left bar
-
     // create index to avoid duplicate
     var option = {
         unique: true,
@@ -57,9 +57,8 @@ function insertNewDocIntoDatabase(sp, user_account_name, key_access) {
     db.close();
 }
 
-
-// Get a specific object from database out and pass a callback on it
 function getObjectFromDatabase(sp, user_account_name, callback) {
+  // Get a specific object from database out and pass a callback on it
     var db = new Engine.Db('./base', {});
     var collection = db.collection("base");
     var doc = collection.findOne({
@@ -72,8 +71,8 @@ function getObjectFromDatabase(sp, user_account_name, callback) {
     db.close();
 }
 
-// Get all objects from the database
 function searchDatabaseWithQuery(callback) {
+  // Get all objects from the database
     var db = new Engine.Db('./base', {});
     var collection = db.collection("base");
     collection.find().toArray(function(err, docs) {
@@ -81,12 +80,3 @@ function searchDatabaseWithQuery(callback) {
     });
     db.close();
 }
-
-/*
-structure of tingoDB document:
-- user_account_type(service provider info)
-- user_account_name
-- access_type (oauth2 or something else?) ---/ maybe it's not neccessary if I perform straight authentication based on service provider type
-- key_access (json body)
-
-*/
