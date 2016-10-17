@@ -22,11 +22,27 @@ var EmailList = React.createClass({
     });
   },
 
+  appendNewMail: function appendNewMail(message) {
+    var data = this.state.data;
+    console.log(message);
+    if (!data.includes(message)) {
+      data.push(message);
+      data.sort(function (a, b) {
+        return b['internalDate'] - a['internalDate'];
+      });
+      this.setState({ data: data });
+    }
+  },
+
   componentDidMount: function componentDidMount() {
     var _this2 = this;
 
     eventEmitter.on('React_listen_to_Acc_change', function (doc) {
       _this2.load_folder(doc);
+    });
+
+    eventEmitter.on('Append_this_mail', function (message) {
+      _this2.appendNewMail(message);
     });
   },
 
@@ -75,14 +91,14 @@ var EmailHead = React.createClass({
 // A supporting module consists of combined Functions to get specific tasks done
 // Call when needed only
 
-exports.Get_path_and_dir = function (doc, callback) {
+exports.Get_path_and_dir = function (account) {
   // Get all message in a directory and pass their content into JSON array
-  var sp = doc.user_account_type;
-  var user_account_name = doc.user_account_name;
+  var sp = account.user_account_type;
+  var user_account_name = account.user_account_name;
   var path = './base/content/' + sp + '__' + user_account_name;
   var result = [];
   fs.readdir(path, function (err, files) {
-    if (!err) {
+    if (!err && files.length > 0) {
       var _iteratorNormalCompletion = true;
       var _didIteratorError = false;
       var _iteratorError = undefined;
@@ -91,8 +107,9 @@ exports.Get_path_and_dir = function (doc, callback) {
         for (var _iterator = files[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
           var file = _step.value;
 
-          var x = JSON.parse(fs.readFileSync(path + '/' + file));
-          result.push(x);
+          fs.readFile(path + '/' + file, function (err2, data) {
+            !err2 && eventEmitter.emit('Append_this_mail', JSON.parse(data));
+          });
         }
       } catch (err) {
         _didIteratorError = true;
@@ -108,14 +125,9 @@ exports.Get_path_and_dir = function (doc, callback) {
           }
         }
       }
-
-      result.sort(function (a, b) {
-        return b['internalDate'] - a['internalDate'];
-      });
-      return callback(result);
     }
   });
-}, exports.First_fetch = function (account, callback) {
+}, exports.First_fetch = function (account) {
   var path = './base/content/' + account.user_account_type + '__' + account.user_account_name;
   load_gmail_stuff(account, function (name, token) {
     gmail_messages_list(name, token, 20, '', function (response) {
@@ -124,18 +136,14 @@ exports.Get_path_and_dir = function (doc, callback) {
       var _iteratorError2 = undefined;
 
       try {
-        var _loop = function _loop() {
+        for (var _iterator2 = response.messages[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
           var message = _step2.value;
 
           gmail_messages_get(name, token, message.id, function (a_message) {
-            fs.writeFile(path + '/' + message.id, JSON.stringify(a_message), function (err) {
-              if (!err) {}
+            fs.writeFile(path + '/' + a_message.id, JSON.stringify(a_message), function (err) {
+              !err && eventEmitter.emit('Append_this_mail', a_message);
             });
           });
-        };
-
-        for (var _iterator2 = response.messages[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-          _loop();
         }
       } catch (err) {
         _didIteratorError2 = true;
@@ -151,13 +159,6 @@ exports.Get_path_and_dir = function (doc, callback) {
           }
         }
       }
-
-      fs.readdir(path, function (err2, files) {
-        if (files.length == response.messages.length) {
-          console.log('New append now');
-          return callback();
-        }
-      });
     });
   });
 };

@@ -18,6 +18,7 @@ var EmailList = React.createClass({
 
   appendNewMail: function(message) {
     let data = this.state.data;
+    console.log(message);
     if (!data.includes(message)) {
       data.push(message);
       data.sort((a,b)=>{return b['internalDate']-a['internalDate']});
@@ -28,9 +29,9 @@ var EmailList = React.createClass({
   componentDidMount: function() {
     eventEmitter.on('React_listen_to_Acc_change', (doc)=>{
       this.load_folder(doc);
-    })
+    });
 
-    eventEmitter.on('New_message_from_new_account', (message)=>{
+    eventEmitter.on('Append_this_mail', (message)=>{
       this.appendNewMail(message);
     });
   },
